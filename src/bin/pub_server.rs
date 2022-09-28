@@ -3,8 +3,6 @@
 //  Publishes random weather updates
 
 use rand::Rng;
-use std::thread;
-use std::time::Duration;
 
 fn main() {
 
