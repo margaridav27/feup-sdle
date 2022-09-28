@@ -7,11 +7,14 @@ use std::thread;
 use std::time::Duration;
 
 fn main() {
+
+    // Prepare context and publisher
     let context = zmq::Context::new();
     let publisher = context.socket(zmq::PUB).unwrap();
 
     assert!(publisher.bind("tcp://*:5556").is_ok());
 
+    // Initialize random generator
     let mut rng = rand::thread_rng();
 
     loop {
@@ -21,6 +24,8 @@ fn main() {
         let relhumidity = rng.gen_range(0..50) + 10;
 
         let data = format!("{:05} {} {}", zipcode, temperature, relhumidity);
+
+        // Send message to all subscribers
         publisher.send(&data, 0);
     }
 

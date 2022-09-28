@@ -11,6 +11,7 @@ fn atoi(s: &str) -> i64 {
 fn main(){
     print!("Collecting updates from weather server...\n");
 
+    // Socket to talk to server
     let context = zmq::Context::new();
     let subscriber  = context.socket(zmq::SUB).unwrap();
 
@@ -18,10 +19,13 @@ fn main(){
 
     let args: Vec<String> = env::args().collect();
     let filter = if args.len() > 1 { &args[1] } else { "10001" };
+
+    // Subscribe to zipcode
     assert!(subscriber.set_subscribe(filter.as_bytes()).is_ok());
 
     let mut total_temp = 0;
 
+    // Process 100 temperature updates in the subscribed zipcode
     for _ in 0..100 {
         let string = subscriber.recv_string(0).unwrap().unwrap();
         let chks: Vec<i64> = string.split(' ').map(atoi).collect();
@@ -30,6 +34,7 @@ fn main(){
         total_temp += temperature;
     }
 
+    // Print the average temperature
     println!(
         "Average temperature for zipcode '{}' was {}F\n",
         filter,
