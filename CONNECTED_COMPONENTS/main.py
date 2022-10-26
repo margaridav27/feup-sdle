@@ -44,6 +44,8 @@ def main():
         result = generate_connected_graph(vertices)
         print(f"Vertices {vertices} / Edges {result:.2f}")
         file.write(f"\n{vertices},{result:.2f}")
+
+    generate_graph_distribution()
     
 if __name__ == '__main__':
     main()
