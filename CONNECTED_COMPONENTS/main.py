@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import random
 import pandas as pd
 
-VERTICES = [pow(2, x) for x in range(1, 16)]
+#VERTICES = [pow(2, x) for x in range(1, 16)]
+VERTICES = 10
 PATH = "./CONNECTED_COMPONENTS/results.csv"
 SAMPLES = 30
 
@@ -15,7 +16,7 @@ def generate_connected_graph(vertices):
     result = 0
     graph = nx.Graph()
     graph.add_nodes_from(range(vertices))
-    for i in range(SAMPLES):
+    for _ in range(SAMPLES):
         graph = nx.create_empty_copy(graph)
         aux = 0
         while(not nx.is_connected(graph)):
@@ -39,13 +40,13 @@ def generate_graph_distribution():
 def main():
     file = open(PATH, "a")
     file.write("Number_vertices,Number_edges")
+    vertices = VERTICES
+    #for vertices in VERTICES:
+    result = generate_connected_graph(vertices)
+    print(f"Vertices {vertices} / Edges {result:.2f}")
+    file.write(f"\n{vertices},{result:.2f}")
 
-    for vertices in VERTICES:
-        result = generate_connected_graph(vertices)
-        print(f"Vertices {vertices} / Edges {result:.2f}")
-        file.write(f"\n{vertices},{result:.2f}")
-
-    generate_graph_distribution()
+    #generate_graph_distribution()
     
 if __name__ == '__main__':
     main()
