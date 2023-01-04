@@ -1,0 +1,44 @@
+Assignment 1 - Reliable Pub/Sub Service
+
+SDLE First Assignment of group T04G12.
+
+Group members:
+
+1. André Pereira (up201905650@fe.up.pt)
+2. Beatriz Aguiar (up201906230@fe.up.pt)
+3. João Marinho (up201905952@fe.up.pt)
+4. Margarida Vieira (up201907907@fe.up.pt)
+
+- Instalation
+
+This project was built using Rust (https://www.rust-lang.org/). Please use the following commands to install Rust in macOS, Linux, or another Unix-like OS:
+
+
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+Full documentation here: https://www.rust-lang.org/tools/install
+
+- Execution
+
+A pre-compiled executable is available in the bin folder with the name, proj1. For any help execute the following instruction:
+
+./bin/proj1 -h
+
+- Subscriber/Publisher
+
+In order to start the subscriber/publisher please run the following command from the root folder:
+
+./bin/proj1 <command> [-i <id>] [-t <topic>] [-m <message>]
+
+Where:
+- <command> is either get, put, sub or unsub (lowercase only).
+- <id> is the client's ID.
+- <topic> is the topic's name.
+- <message> is the message sent on the put operation.
+
+- Service
+
+In order to start the service please run the following command from the root folder:
+
+./bin/proj1 broker
+
