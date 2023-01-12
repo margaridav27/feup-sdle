@@ -131,43 +131,41 @@ Since a write operation depends on previous write operations, **N<sub>W</sub>** 
 
 **Let f be the maximum number of replicas that may crash simultaneously, then the minimum number of replicas needed for the system to tolerate replicas' unavailability is f+1**
 
-## XA-based Quorum Consensus Implementation
+## XA-based Quorum Consensus
 
-read more
+Read more
 
-## Transaction-based Quorum Consensus Replication
+## Transaction-based Quorum Consensus
 
-read more
+Read more
 
-# Replication and Consistency Models
+## Consistency Models
 
-## Sequential Consistency
+### Sequential Consistency
 
 The sequential consistency model guarantees that all threads will see the same sequence of memory operations in the same order. In other words, the model ensures that if two memory operations are performed by different threads, they will appear to have been performed in the order in which they were requested, regardless of the actual order in which they were executed by the hardware
 
 **Sequential consistency is not composable** because it requires that all memory operations be ordered in a single global sequence, which means that the order of memory operations performed by different threads cannot be determined independently. This makes it difficult to compose multiple concurrent operations because their ordering may depend on the ordering of other operations
 
-### Protocol
+#### Protocol
 
 - **read**: reads from one replica
 - **write**: writes to all replicas in same order and does not require a reply
 - **snapshot**: reads from one replica
 
-## Linearizability
+### Linearizability
 
 An execution is linearizable iff it is sequential consistent and if op<sub>1</sub> occurs before op<sub>2</sub>, according to one omniscient observer, then op<sub>1</sub> must appear before op<sub>2</sub>
 
 op<sub>1</sub> occuring before op<sub>2</sub> means that op<sub>1</sub>'s finish time is smaller than op<sub>2</sub>'s start time - if the operations overlap in time, their relative order may be any
 
-### Protocol
+#### Protocol
 
 - **read**: reads from one replica
 - **write**: writes to all replicas in same order and waits for ack from all replicas before returning
 - **snapshot**: reads from one replica
 
 Guaranteeing linearizability usually requires more synchronization
-
-# Replication for Fault Tolerance
 
 ## Quorums-Consensus Replicated ADT
 
@@ -200,6 +198,8 @@ For example, the choices of minimal (size) quorums for an object with N=5 replic
   - there is no need to read the versions from an initial quorum, because the timestamp generation already guarantees that the total order is consistent with the order seen by an omniscient observer
   - client needs only write the new state to a final quorum
 
+One disadvantage is that logs grow indefinitely -> is enough to keep the **horizon timestamp**, i.e. the timestamp of the enq entry of the most recently dequeued item (because if an item A has been dequeued, all items enqueued before A must have been dequeued), and **a log with only enq entries, whose timestamps are later than the horizon timestamp**
+
 Only one constraint is imposed:
 
 - each final quorum for write must intersect each initial quorum for read
@@ -214,3 +214,12 @@ Considering the same example as above:
 | --------- | ------------------------------------- |
 | read      | (1,0) / (2,0) / (3,0) / (4,0) / (5,0) |
 | write     | (0,5) / (0,4) / (0,3) / (0,2) / (0,1) |
+
+### Herlihy’s Replicated Queue
+
+- **every initial deq quorum must intersect every final enq quorum**, so that the reconstructed queue reflects all previous enq events
+- **every initial deq quorum must intesect every final deq quorum**, so that the reconstructed queue reflects all previous deq events
+- **the views for enq operations need not include any prior events**, because enq returns no information about the queue’s state (an initial enq quorum may be empty)
+
+## Byzantine Quorums
+
