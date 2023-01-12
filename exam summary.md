@@ -180,7 +180,7 @@ Two constraints are imposed:
 
 Quorum intersection graph:
 
-
+![Screenshot from 2023-01-12 14-16-28](https://user-images.githubusercontent.com/55671968/212091045-222c3327-ba09-49d7-8c90-a1f42d9ae2bf.png)
 
 For example, the choices of minimal (size) quorums for an object with N=5 replicas:
 
@@ -206,7 +206,7 @@ Only one constraint is imposed:
 
 Quorum intersection graph:
 
-
+![Screenshot from 2023-01-12 14-16-51](https://user-images.githubusercontent.com/55671968/212091068-1b4085cd-5559-4202-9744-0b07e62a4929.png)
 
 Considering the same example as above:
 
