@@ -299,6 +299,8 @@ If f is the upperbound on faulty servers, then we need at least f+1 up-to-date n
 
 Saying that we need at least f+1 non-faulty is equivalent to saying that **n-f >= |q| -> M-availability**
 
+![image](https://user-images.githubusercontent.com/55671968/212310731-533f8616-2776-4648-8e7c-b4d8d70fbe7d.png)
+
 |q|-(n-|q|) >= 2f+1 <=> |q|-n+|q| >= 2f+1 <=> **2|q|-n >= 2f+1 -> M-consistency**
 
 If we combine,
@@ -334,6 +336,8 @@ Very similar to the read operation in masking quorums but, instead of discarding
 If f is the upperbound on faulty servers, then we need at least f+1 up-to-date non-faulty servers, thus **every pair of quorums must intersect in at least f+1 servers**
 
 Saying that we need at least f+1 non-faulty is equivalent to saying that **n-f >= |q| -> D-availability**
+
+![image](https://user-images.githubusercontent.com/55671968/212310750-98dd8413-33d1-41da-b432-c11a39625747.png)
 
 |q|-(n-|q|) >= f+1 <=> |q|-n+|q| >= f+1 <=> **2|q|-n >= f+1 -> D-consistency**
 
