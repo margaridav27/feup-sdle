@@ -356,6 +356,122 @@ Let n = 3f+1, then |q| = 2f+1
 
 # Practical Byzantine Fault-Tolerance
 
-# Scalable Distributed Topologies
+## FLP’s Impossibility Result
 
-# Blockchain
+**Safety:** agreement (no two correct processes decide differently) and validity (the decided value depends on the input of the processes)
+
+**Liveness:** every execution of a protocol decides a value
+
+**Theorem:** in an asynchronous system in which at least one process may crash, there is no deterministic consensus protocol that is both live and safe
+
+The intuition behind the theorem is that, in asynchronous distributed systems, one cannot distinguish a slow process from a crashed process and so, there will always be the possibility of certain executions reaching a state where:
+
+- if a process takes no decision, it may remain forever undecided,
+  thus violating liveness
+- if a process makes a decision, independently of the decision rule,
+  it may violate one of the safety properties
+
+## System Model
+
+**Notation**
+
+- d = D(m): message m's digest
+- {m}<sub>i</sub>: message m signed by process i
+- PC: prepared certificate
+- CC: commit certificate
+- VC: new-view certificate
+
+Since f nodes may fail, it should be possible to proceed after communicating with at least n-f nodes
+
+However, one can be able to communicate with nodes that are faulty or not be able to communicate with nodes that are not faulty simply because they are slower
+
+There is the possibility of all nodes that responded being also faulty and so one needs to make sure that the non-faulty nodes outnumber the faulty ones -> (n-f)-f > f <=> **n > 3f** (n >= 3f+1 -> recall dissemination quorum systems -> quorums intersect in at least 1 replica -> quorums of f+1 replicas)
+
+- **view** is a numbered system configuration
+- **each view has a leader** (l = v mod n)
+- n >= 3f+1 replicas
+
+### Normal Case Operation
+
+- 3-phase algorithm - when the leader receives a request m from one of the clients, it starts this algorithm to atomically multicast the request to the replicas
+  - **pre-prepare** - picks order of requests
+  - **prepare** - ensures order within views
+  - **commit** - ensures order across views
+- replicas remember messages in log
+- messages are signed
+
+#### PRE-PREPARE
+
+- leader receives request m
+- assigns sequence number n to m
+- multicasts {{PRE-PREPARE, v, n, d}<sub>l</sub>, m}
+- a replica accepts PRE-PREPARE if
+  1. it is in view v
+  2. the signatures are valid
+  3. it has not already accepted a PRE-PREPARE for the same v and n with a different digest
+  4. h > n > H (n is between the low and high water marks)
+- by accepting, enters PREPARE phase
+
+#### PREPARE
+
+- each replica i that accepts to pre-prepare multicasts message {PREPARE, v, n, d, i}<sub>i</sub>
+- a replica accepts PREPARE if conditions 1, 2 and 4 apply
+- replicas collect its own PRE-PRPARE plus 2f matching PREPARE messages -> PC(m,v,n)
+- after collecting a PC, a replica has prepared the request and enters COMMIT phase
+- this ensures consistent ordering within a view, because one can never get two PCs with same v and n for different requests
+  - to obtain a PC for m in v with n, 2f+1 replicas must have either sent or accepted a PRE-PREPARE in v with n
+  - the quorums have, at least, f+1 replicas in common
+  - thus, at least 1 non-faulty replica would have to have either sent or accepted two PRE-PREPARE messages in v with n for different requests, m and m', which is not possible by the protocol
+
+#### COMMIT
+
+- replica i multicasts message {COMMIT, v, n, d, i}<sub>i</sub>
+- a replica accepts COMMIT if conditions 1, 2 and 4 apply
+- replicas collect its own plus 2f matching COMMIT messages -> CC(m,v,n)
+- after collecting both PC and CC, a replica has commited the request
+- now replica can go ahead and execute the request (only it has executed all requests with a lower n)
+- this phase ensures that if a replica commited a request, that request was prepared by, at least, f+1 non-faulty replicas
+  - to obtain a CC for m in v with n, a replica must have accepted matching COMMIT messages from 2f+1 replicas
+  - since there are, at most, f faulty replicas, at least f+1 non-faulty replicas sent COMMIT
+  - by the protocol, a non-faulty replica can only send COMMIT after it has prepared the request
+
+### View Change Protocol
+
+- to ensure liveness upon failure of the leader, while ensuring safety
+- leader failure is suspected on timeout or on evidence of faulty behaviour
+- what we wish to establish is that a request that was still being processed at the time the leader failed, will eventually get executed once and only once by all non-faulty servers
+- to this end, we first need to ensure that, regardless v, there are no two CCs with the same n but different requests
+- this situation can be prevented by having 2f+1 CCs just as before, but this time based on PCs - in other words, we want to regenerate CCs, but now for v+1, and only to make sure that a non-faulty server is not missing any operation
+- note that we may be generating a CC for an operation that a server had already executed (which can be observed by looking at the sequence numbers), but that CC will be ignored by the server as long as it keeps an account of its own execution history
+
+#### 1ST PHASE
+
+- upon leader suspicion in view v, replica i starts view change protocol
+- multicasts {VIEW-CHANGE, v+1, n, C, P, i}<sub>i</sub>
+  - n: the sequence number of the last stable checkpoint known to i
+  - C: that checkpoint's stable certificate
+  - P: set with a PC for each request prepared at replica i with sequence number greater than n
+
+#### 2ND PHASE
+
+- leader of view v+1 collects 2f+1 valid VIEW-CHANGE messages for v+1 -> VC(m,v,n)
+- multicasts {NEW-VIEW, v+1, V, O, N}<sub>l</sub>
+  - V: VC
+  - O/N: set of PRE-PREPARE messages (without the respective requests) that propagate sequence number assignments from previous views
+
+##### Computation of O
+
+- the leader, l, of v+1 determines the sequence numbers h (the latest stable checkpoint in V) and H (the highest in a message in a PC in V)
+- for each n such that h <= n <= H, (?? not sure if it is for each)
+  - creates {PRE-PREPARE, v+1, n, d}<sub>l</sub> and adds it to O, such that d is the digest of the PC(m,v',n), if there is one in V, with the hightest view number v'
+  - or creates {PRE-PREPARE, v+1, n, null}<sub>l</sub> and adds it to N, whereas this time digest d is null because there is no PC(_,_,n) in V
+- appends the messages in O and N to its log, as they belong to the PRE-PREPARE phase for these requests in the new view
+
+#### Correctness: safety
+
+Safety depends on all non-faulty replicas agreeing on the sequence numbers of requests that commit locally
+
+For local commits at
+
+- the same view -> ensured by the PRE-PREPARE and PREPARE phases
+- different views -> ensured by the view change protocol
