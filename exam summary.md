@@ -475,3 +475,70 @@ For local commits at
 
 - the same view -> ensured by the PRE-PREPARE and PREPARE phases
 - different views -> ensured by the view change protocol
+
+# Scalable Distributed Topologies
+
+- **walk**: edges and vertices can be repeated
+- **trail**: only vertices can be repeated
+- **path**: no repeated vertices or edges
+- **complete graph**: each pair of vertices has an edge connecting them
+- **connected graph**: there is a path between any two vertices
+- **planar graph**: can be drawn in the plane without crossing edges
+- **connected component**: maximal connected subgraph
+- **eccentricity**: maximum distance from a vertex to any other vertex in the graph
+- **diameter**: maximum eccentricity
+- **radius**: minimum eccentricity
+- **center**: vertices whose eccentricity is equal to its radius
+- **peripheral**: vertices whose eccentricity is equal to its diameter
+
+**A random geometric graph is not guaranteed to be planar.** However, the probability of a random geometric graph being planar increases as the distance threshold for adding edges decreases, as there will be fewer edges and thus a smaller chance of edges crossing. It is possible to show that if the threshold distance is less than the square root of (ln(n)/n) where n is the number of vertices, then the graph is almost surely planar.
+
+## Reliable FIFO send/receive channels
+
+- `send` is the same as enq
+- `receive` is the same as deq
+- `cause(receive)` is a function that maps the receive event to its corresponding preceding send
+- `cause` is **surjective**, i.e. for every send there must be a receive because no messages are lost, and **injective**, i.e. for every receive there must be a distinct send because no messages are duplicated
+- receive < receive' => cause(receive) < cause(receive'), i.e. order is preserved
+
+## Spanning Trees
+
+Read more on AsyncSpanningTree algorithm
+
+## Epidemic Broadcast Trees
+
+- **gossip broadcast**: + highly scalable and resilient, - excessive message overhead
+- **tree-based broadcast**: + small message complexity, - fragile in the presence of failures
+
+# System Design for Large Scale
+
+**Law of diminishing returns:** in a production system with fixed and variable inputs, beyond some point, each additional unit of variable input yields less and less additional output
+
+### Distributed Hash Tables - DHTs
+
+- DHTs provide ways of mapping keys to network nodes
+- node joins and leaves should be accounted for in the protocols, in order to preserve some structure in the routing supporting the DHT
+- DHTs can require more maintenance than unstructured P2P systems
+
+#### Chord
+
+- nodes and keys are assigned unique IDs in an ID space from 0 to 2<sup>m</sup>-1 based on SHA-1 hash function
+- nodes and keys are arranged in a logical ring module 2<sup>m</sup>
+- each node maintains a finger table, which is a list of other nodes in the network that it is directly connected to
+- when a new node joins the network, it uses the finger table of other nodes to find its place in the ring and update its finger table accordingly
+- each node is responsible for a range of keys, known as its "successor space", and it stores the keys that fall within that range
+- for a given key, its successor node is the node with the smallest ID that is larger than the key's ID
+- nodes keep O(log n) knowledge on other nodes and routing takes O(log n) steps
+
+#### Kademlia
+
+- nodes and keys share a 160 bits ID space
+- ID distance is computed using the XOR metric, which satisfies the triangle inequality
+- each node maintains a (bucket-based) routing table, which is a list of other nodes in the network that it is directly connected to
+- when a new node joins the network, it uses the routing table of other nodes to find its place in the network and update its routing table accordingly
+- the key-value pairs are stored on the nodes according to the key's distance to the node's ID - the nodes closer to the key will store the key-value pair
+- has a more efficient way to find the closest nodes to a key, called "parallel lookups" which improves the performance and reduces the network load
+
+# Physical and Logical Time
+
+
