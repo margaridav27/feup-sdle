@@ -33,7 +33,7 @@ An atomic bit string
 #### Message Duplication
 
 - **TCP is not able to filter data duplicated by the application, only duplicated TCP segments**
-- to address this issue, the application must be able to synchronize with the remote end to learn if there was some data loss in either direction
+- to address this issue, the application must be able to synchronize w/ the remote end to learn if there was some data loss in either direction
 - simply retransmit messages is not always a feasible solution due to non-idempotent operations
 
 ### RPC
@@ -68,8 +68,8 @@ Sender and receiver do not need to synchronize w/ one another
 - clients send/receive messages to/from destinations in the context of a session
 - sessions are created in the context of a connection
 - JMS messages have 3 parts: header (to identify and route), properties (optional metadata) and body (actual data)
-- messages sent **in the context of a session** to a queue are delivered in the sending order (this guarantee only applies to messages with the same delivery mode - see below)
-- does not guarantee interoperability, i.e. a JMS provider being able to communicate with another JMS provider, which may be a limitation in cases where one needs to integrate different JMS providers
+- messages sent **in the context of a session** to a queue are delivered in the sending order (this guarantee only applies to messages w/ the same delivery mode - see below)
+- does not guarantee interoperability, i.e. a JMS provider being able to communicate w/ another JMS provider, which may be a limitation in cases where one needs to integrate different JMS providers
 
 |         | Blocking | Non-Blocking | Asynchronous |
 | ------- | -------- | ------------ | ------------ |
@@ -118,6 +118,8 @@ Convert the format of the messages used by one application to the format used by
 Replication is used to enhance the performance of the system, not the reliability
 
 ## Quorum Consensus
+
+I highly recommend reading the section 7.5.3 of van Steen and Tanenbaum, Distributed Systems, 3rd Ed., which can be found [here](https://www.pdfdrive.com/distributed-systems-3rd-edition-d189433770.html)
 
 **Quorum** is a set of replicas
 
@@ -186,7 +188,7 @@ Quorum intersection graph:
 
 ![Screenshot from 2023-01-12 14-16-28](https://user-images.githubusercontent.com/55671968/212091045-222c3327-ba09-49d7-8c90-a1f42d9ae2bf.png)
 
-For example, the choices of minimal (size) quorums for an object with N=5 replicas:
+For example, the choices of minimal (size) quorums for an object w/ N=5 replicas:
 
 | Operation | Quorum choices        |
 | --------- | --------------------- |
@@ -195,16 +197,18 @@ For example, the choices of minimal (size) quorums for an object with N=5 replic
 
 ## Herlihy’s Method for Quorums-Consensus Replicated ADT
 
+I highly recommend reading the paper [A Quorum-Consensus Replication Method for Abstract Data Types, by Maurice Herlihy](https://www.cs.utexas.edu/~lorenzo/corsi/cs395t/04S/notes/p32-herlihy.pdf)
+
 - **timestamps** instead of version numbers
   - clients are able to generate timestamps that can be totally ordered, which will be consistent to that seen by an omniscient observer, hence guaranteeing linearizability
 - **logs** instead of versions
 - **read**
   - client uses the timestamp instead of the version to identify a replica that is up-to-date
 - **write**
-  - there is no need to read the versions from an initial quorum, because the timestamp generation already guarantees that the total order is consistent with the order seen by an omniscient observer
+  - there is no need to read the versions from an initial quorum, because the timestamp generation already guarantees that the total order is consistent w/ the order seen by an omniscient observer
   - client needs only write the new state to a final quorum
 
-One disadvantage is that logs grow indefinitely -> is enough to keep the **horizon timestamp**, i.e. the timestamp of the enq entry of the most recently dequeued item (because if an item A has been dequeued, all items enqueued before A must have been dequeued), and **a log with only enq entries, whose timestamps are later than the horizon timestamp**
+One disadvantage is that logs grow indefinitely -> is enough to keep the **horizon timestamp**, i.e. the timestamp of the enq entry of the most recently dequeued item (because if an item A has been dequeued, all items enqueued before A must have been dequeued), and **a log w/ only enq entries, whose timestamps are later than the horizon timestamp**
 
 Only one constraint is imposed:
 
@@ -229,6 +233,8 @@ Considering the same example as above:
 
 ## Byzantine Quorums
 
+I highly recommend reading the paper [A Quorum-Consensus Replication Method for Abstract Data Types, by Maurice Herlihy](https://www.cs.utexas.edu/~lorenzo/corsi/cs395t/04S/notes/p32-herlihy.pdf)
+
 ### Byzantine Failures
 
 A Byzantine failure is a failure in which a replica may behave arbitrarily
@@ -238,20 +244,20 @@ Faulty processes must be fewer than a third of all processes
 ### Byzantine Quorums
 
 - |U| = n servers (U is the universe of servers)
-- Q quorums such that each pair of quorums intersect
+- Q quorums s.t. each pair of quorums intersect
 - q ∈ Q is a quorum and |q| is its size
-- B is the universe of fail-prone servers such that none is contained in another
+- B is the universe of fail-prone servers s.t. none is contained in another
 - b ∈ B is a set that contains all actually faulty servers (distinction: B - fail-prone, b - actually faulty)
 - f is the upperbound on byzantine servers (f = max |b|)
 - clients perform **read** and **write** operations on x
-- a copy of x is stored on each server, along with a timestamp
-- different clients must choose different timestamps and thus, each client chooses t ∈ T<sub>c</sub>, such that T<sub>c</sub> does not intersect T<sub>c'</sub> for any other client c'
+- a copy of x is stored on each server, along w/ a timestamp
+- different clients must choose different timestamps and thus, each client chooses t ∈ T<sub>c</sub>, s.t. T<sub>c</sub> does not intersect T<sub>c'</sub> for any other client c'
 
 **Read**
 
 1. operation starts
 2. client obtains a set of timestamps from some q
-3. client chooses a timestamp t ∈ T<sub>c</sub>, such that
+3. client chooses a timestamp t ∈ T<sub>c</sub>, s.t.
    - t > any timestamp in the set obtained from q
    - t > any timestamp the client has chosen before
 4. sends (v,t) to every server in some q' until it has received an ack from each one of them
@@ -275,8 +281,8 @@ Faulty processes must be fewer than a third of all processes
 
 #### Masking Quorums
 
-- x is written with quorum q<sub>1</sub>
-- subsequently, x is read with quorum q<sub>2</sub>
+- x is written w/ quorum q<sub>1</sub>
+- subsequently, x is read w/ quorum q<sub>2</sub>
 - b are the faulty servers
 - then,
   - up-to-date value of x is obtained from (q<sub>1</sub> ∩ q<sub>2</sub>) \ b
@@ -311,7 +317,7 @@ Let n = 4f+1, then |q| = 3f+1
 
 ##### Lemmas/Theorems/Corollaries
 
-- **Lemma 1:** A read operation that is concurrent with no write operations returns the value written by the last preceding write operation in some serialization of all preceding write operations
+- **Lemma 1:** A read operation that is concurrent w/ no write operations returns the value written by the last preceding write operation in some serialization of all preceding write operations
 - **Theorem 1:** Let B a fail-prone system for a universe U. Then there exists a masking quorum system for B iff Q = {U \ b: b ∈ B} is a masking quorum system for B
 - **Corollary 1:** Let B a fail-prone system for a universe U. Then there exists a masking quorum system for B iff for all b<sub>1</sub>, b<sub>2</sub>, b<sub>3</sub>, b<sub>4</sub> ∈ B, U ⊄ b<sub>1</sub> ∪ b<sub>2</sub> ∪ b<sub>3</sub> ∪ b<sub>4</sub>. In particular, suppose that B = {b ⊄ U: |b| = f}. Then, what that means is that there exists a masking quorum for B iff n > 4f (which is the same as n >= 4f+1)
 
@@ -350,7 +356,7 @@ Let n = 3f+1, then |q| = 2f+1
 ##### Lemmas/Theorems/Corollaries
 
 - **Lemma 1:** same as for masking quorums
-- **Lemma 2:** A read operation that is concurrent with one or more write operations returns either the value written by the last preceding write operation in some serialization of all preceding write operations, or any of the values being written in the concurrent write operations
+- **Lemma 2:** A read operation that is concurrent w/ one or more write operations returns either the value written by the last preceding write operation in some serialization of all preceding write operations, or any of the values being written in the concurrent write operations
 - **Theorem 1:** same as for masking quorums, but instead of 'masking quorums', is 'dissemination quorums'
 - **Corollary 1:** same as for masking quorums, but instead of n > 4f, is n > 3f
 
@@ -373,6 +379,8 @@ The intuition behind the theorem is that, in asynchronous distributed systems, o
 
 ## System Model
 
+I highly recommend reading the paper [Byzantine quorum systems, by Dahlia Malkhi and Michael Reiter](https://dahliamalkhi.files.wordpress.com/2015/12/byzquorums-distcomputing1998.pdf) and the section 8.2.5 of van Steen and Tanenbaum, Distributed Systems, 3rd Ed., which can be found [here](https://www.pdfdrive.com/distributed-systems-3rd-edition-d189433770.html)
+
 **Notation**
 
 - d = D(m): message m's digest
@@ -381,9 +389,9 @@ The intuition behind the theorem is that, in asynchronous distributed systems, o
 - CC: commit certificate
 - VC: new-view certificate
 
-Since f nodes may fail, it should be possible to proceed after communicating with at least n-f nodes
+Since f nodes may fail, it should be possible to proceed after communicating w/ at least n-f nodes
 
-However, one can be able to communicate with nodes that are faulty or not be able to communicate with nodes that are not faulty simply because they are slower
+However, one can be able to communicate w/ nodes that are faulty or not be able to communicate w/ nodes that are not faulty simply because they are slower
 
 There is the possibility of all nodes that responded being also faulty and so one needs to make sure that the non-faulty nodes outnumber the faulty ones -> (n-f)-f > f <=> **n > 3f** (n >= 3f+1 -> recall dissemination quorum systems -> quorums intersect in at least 1 replica -> quorums of f+1 replicas)
 
@@ -395,7 +403,7 @@ There is the possibility of all nodes that responded being also faulty and so on
 
 - 3-phase algorithm - when the leader receives a request m from one of the clients, it starts this algorithm to atomically multicast the request to the replicas
   - **pre-prepare** - picks order of requests
-  - **prepare** - ensures order within views
+  - **prepare** - ensures order w/in views
   - **commit** - ensures order across views
 - replicas remember messages in log
 - messages are signed
@@ -408,7 +416,7 @@ There is the possibility of all nodes that responded being also faulty and so on
 - a replica accepts PRE-PREPARE if
   1. it is in view v
   2. the signatures are valid
-  3. it has not already accepted a PRE-PREPARE for the same v and n with a different digest
+  3. it has not already accepted a PRE-PREPARE for the same v and n w/ a different digest
   4. h > n > H (n is between the low and high water marks)
 - by accepting, enters PREPARE phase
 
@@ -418,10 +426,10 @@ There is the possibility of all nodes that responded being also faulty and so on
 - a replica accepts PREPARE if conditions 1, 2 and 4 apply
 - replicas collect its own PRE-PRPARE plus 2f matching PREPARE messages -> PC(m,v,n)
 - after collecting a PC, a replica has prepared the request and enters COMMIT phase
-- this ensures consistent ordering within a view, because one can never get two PCs with same v and n for different requests
-  - to obtain a PC for m in v with n, 2f+1 replicas must have either sent or accepted a PRE-PREPARE in v with n
+- this ensures consistent ordering w/in a view, because one can never get two PCs w/ same v and n for different requests
+  - to obtain a PC for m in v w/ n, 2f+1 replicas must have either sent or accepted a PRE-PREPARE in v w/ n
   - the quorums have, at least, f+1 replicas in common
-  - thus, at least 1 non-faulty replica would have to have either sent or accepted two PRE-PREPARE messages in v with n for different requests, m and m', which is not possible by the protocol
+  - thus, at least 1 non-faulty replica would have to have either sent or accepted two PRE-PREPARE messages in v w/ n for different requests, m and m', which is not possible by the protocol
 
 #### COMMIT
 
@@ -429,9 +437,9 @@ There is the possibility of all nodes that responded being also faulty and so on
 - a replica accepts COMMIT if conditions 1, 2 and 4 apply
 - replicas collect its own plus 2f matching COMMIT messages -> CC(m,v,n)
 - after collecting both PC and CC, a replica has commited the request
-- now replica can go ahead and execute the request (only it has executed all requests with a lower n)
+- now replica can go ahead and execute the request (only it has executed all requests w/ a lower n)
 - this phase ensures that if a replica commited a request, that request was prepared by, at least, f+1 non-faulty replicas
-  - to obtain a CC for m in v with n, a replica must have accepted matching COMMIT messages from 2f+1 replicas
+  - to obtain a CC for m in v w/ n, a replica must have accepted matching COMMIT messages from 2f+1 replicas
   - since there are, at most, f faulty replicas, at least f+1 non-faulty replicas sent COMMIT
   - by the protocol, a non-faulty replica can only send COMMIT after it has prepared the request
 
@@ -440,7 +448,7 @@ There is the possibility of all nodes that responded being also faulty and so on
 - to ensure liveness upon failure of the leader, while ensuring safety
 - leader failure is suspected on timeout or on evidence of faulty behaviour
 - what we wish to establish is that a request that was still being processed at the time the leader failed, will eventually get executed once and only once by all non-faulty servers
-- to this end, we first need to ensure that, regardless v, there are no two CCs with the same n but different requests
+- to this end, we first need to ensure that, regardless v, there are no two CCs w/ the same n but different requests
 - this situation can be prevented by having 2f+1 CCs just as before, but this time based on PCs - in other words, we want to regenerate CCs, but now for v+1, and only to make sure that a non-faulty server is not missing any operation
 - note that we may be generating a CC for an operation that a server had already executed (which can be observed by looking at the sequence numbers), but that CC will be ignored by the server as long as it keeps an account of its own execution history
 
@@ -450,20 +458,20 @@ There is the possibility of all nodes that responded being also faulty and so on
 - multicasts {VIEW-CHANGE, v+1, n, C, P, i}<sub>i</sub>
   - n: the sequence number of the last stable checkpoint known to i
   - C: that checkpoint's stable certificate
-  - P: set with a PC for each request prepared at replica i with sequence number greater than n
+  - P: set w/ a PC for each request prepared at replica i w/ sequence number greater than n
 
 #### 2ND PHASE
 
 - leader of view v+1 collects 2f+1 valid VIEW-CHANGE messages for v+1 -> VC(m,v,n)
 - multicasts {NEW-VIEW, v+1, V, O, N}<sub>l</sub>
   - V: VC
-  - O/N: set of PRE-PREPARE messages (without the respective requests) that propagate sequence number assignments from previous views
+  - O/N: set of PRE-PREPARE messages (w/out the respective requests) that propagate sequence number assignments from previous views
 
 ##### Computation of O
 
 - the leader, l, of v+1 determines the sequence numbers h (the latest stable checkpoint in V) and H (the highest in a message in a PC in V)
-- for each n such that h <= n <= H, (?? not sure if it is for each)
-  - creates {PRE-PREPARE, v+1, n, d}<sub>l</sub> and adds it to O, such that d is the digest of the PC(m,v',n), if there is one in V, with the hightest view number v'
+- for each n s.t. h <= n <= H, (?? not sure if it is for each)
+  - creates {PRE-PREPARE, v+1, n, d}<sub>l</sub> and adds it to O, s.t. d is the digest of the PC(m,v',n), if there is one in V, w/ the hightest view number v'
   - or creates {PRE-PREPARE, v+1, n, null}<sub>l</sub> and adds it to N, whereas this time digest d is null because there is no PC(_,_,n) in V
 - appends the messages in O and N to its log, as they belong to the PRE-PREPARE phase for these requests in the new view
 
@@ -483,7 +491,7 @@ For local commits at
 - **path**: no repeated vertices or edges
 - **complete graph**: each pair of vertices has an edge connecting them
 - **connected graph**: there is a path between any two vertices
-- **planar graph**: can be drawn in the plane without crossing edges
+- **planar graph**: can be drawn in the plane w/out crossing edges
 - **connected component**: maximal connected subgraph
 - **eccentricity**: maximum distance from a vertex to any other vertex in the graph
 - **diameter**: maximum eccentricity
@@ -512,7 +520,7 @@ Read more on AsyncSpanningTree algorithm
 
 # System Design for Large Scale
 
-**Law of diminishing returns:** in a production system with fixed and variable inputs, beyond some point, each additional unit of variable input yields less and less additional output
+**Law of diminishing returns:** in a production system w/ fixed and variable inputs, beyond some point, each additional unit of variable input yields less and less additional output
 
 ### Distributed Hash Tables - DHTs
 
@@ -526,8 +534,8 @@ Read more on AsyncSpanningTree algorithm
 - nodes and keys are arranged in a logical ring module 2<sup>m</sup>
 - each node maintains a finger table, which is a list of other nodes in the network that it is directly connected to
 - when a new node joins the network, it uses the finger table of other nodes to find its place in the ring and update its finger table accordingly
-- each node is responsible for a range of keys, known as its "successor space", and it stores the keys that fall within that range
-- for a given key, its successor node is the node with the smallest ID that is larger than the key's ID
+- each node is responsible for a range of keys, known as its "successor space", and it stores the keys that fall w/in that range
+- for a given key, its successor node is the node w/ the smallest ID that is larger than the key's ID
 - nodes keep O(log n) knowledge on other nodes and routing takes O(log n) steps
 
 #### Kademlia
@@ -541,4 +549,45 @@ Read more on AsyncSpanningTree algorithm
 
 # Physical and Logical Time
 
+I highly recommend watching the following videos (especially the two last ones, for a much clear understanding of vector clocks):
 
+1. [Distributed Systems 3.1: Physical time](https://www.youtube.com/watch?v=FQ_2N3AQu0M&list=PLeKd45zvjcDFUEv_ohr_HdUFe97RItdiB&index=9&ab_channel=MartinKleppmann)
+2. [Distributed Systems 3.2: Clock synchronisation](https://www.youtube.com/watch?v=mAyW-4LeXZo&list=PLeKd45zvjcDFUEv_ohr_HdUFe97RItdiB&index=10&ab_channel=MartinKleppmann)
+3. [Distributed Systems 3.3: Causality and happens-before](https://www.youtube.com/watch?v=OKHIdpOAxto&list=PLeKd45zvjcDFUEv_ohr_HdUFe97RItdiB&index=11&ab_channel=MartinKleppmann)
+4. [Distributed Systems 4.1: Logical time](https://www.youtube.com/watch?v=x-D8iFU1d-o&list=PLeKd45zvjcDFUEv_ohr_HdUFe97RItdiB&index=12&ab_channel=MartinKleppmann)
+
+## Time synchronization
+
+- **external:** states a precision w.r.t. an authoritative reference
+  - for a band D>0 and UTC source S, |S(t)-C<sub>i</sub>(t)| < D
+- **internal:** states a precision between two nodes (note that if one is authoritative -> external)
+  - for a band D>0 we have |C<sub>j</sub>(t)-C<sub>i</sub>(t)| < D
+
+Some uses (e.g. make) require time monotonicity
+
+### Time Synchronization on Synchronous Systems
+
+- considering the transit time trans and receiving origin time t, one could set to t+trans
+- however, trans can vary between t<sub>min</sub> and t<sub>max</sub>
+- using t+t<sub>min</sub> or t+t<sub>max</sub> the uncertainty is u=t<sub>max</sub>-t<sub>min</sub>
+- but, using t+(t<sub>min</sub>+t<sub>max</sub>)/2 the uncertainty is u/2
+
+### Time Synchronization on Asynchronous Systems
+
+**Cristian's algorithm** works between a process and a time server connected to a time reference source
+
+- let P be the process and S the time server
+- P requests the time from S at time t
+- upon receiving the request from P, S prepares a response and appends the time T from its own clock
+- P receives the response at time t' then sets its time to be T+RTT/2, where RTT=t'-t
+- precision can be increased by repeating the protocol until a low RTT occurs
+
+Unlike Cristian's algorithm, the server process in the **Berkeley algorithm**, called the leader, periodically polls other follower processes
+
+- let L be the leader process, F<sub>i</sub> ∈ F a follower process and F the follower processes
+- L is chosen via an election process
+- L polls F, who reply with their time in a similar way to Cristian's algorithm
+- L observes the RTT of the messages and estimates the time of each F<sub>i</sub> and its own
+- L then averages the clock times, ignoring any values it receives far outside the values of the others
+- instead of sending the updated current time back to the other process, L then sends out the amount (positive or negative) that each F<sub>i</sub> must adjust its clock
+- this avoids further uncertainty due to RTT at F
