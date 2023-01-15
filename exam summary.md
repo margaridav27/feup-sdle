@@ -547,6 +547,8 @@ Read more on AsyncSpanningTree algorithm
 - the key-value pairs are stored on the nodes according to the key's distance to the node's ID - the nodes closer to the key will store the key-value pair
 - has a more efficient way to find the closest nodes to a key, called "parallel lookups" which improves the performance and reduces the network load
 
+![image](https://user-images.githubusercontent.com/55671968/212494205-07276c00-529a-4872-a2ff-3d34719ee2b7.png)
+
 # Physical and Logical Time
 
 I highly recommend watching the following videos (especially the two last ones, for a much clear understanding of vector clocks):
