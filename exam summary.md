@@ -119,7 +119,7 @@ Replication is used to enhance the performance of the system, not the reliabilit
 
 ## Quorum Consensus
 
-I highly recommend reading the section 7.5.3 of van Steen and Tanenbaum, Distributed Systems, 3rd Ed., which can be found [here](https://www.pdfdrive.com/distributed-systems-3rd-edition-d189433770.html)
+I recommend reading the section 7.5.3 of van Steen and Tanenbaum, Distributed Systems, 3rd Ed., which can be found [here](https://www.pdfdrive.com/distributed-systems-3rd-edition-d189433770.html)
 
 **Quorum** is a set of replicas
 
@@ -197,7 +197,7 @@ For example, the choices of minimal (size) quorums for an object w/ N=5 replicas
 
 ## Herlihy’s Method for Quorums-Consensus Replicated ADT
 
-I highly recommend reading the paper [A Quorum-Consensus Replication Method for Abstract Data Types, by Maurice Herlihy](https://www.cs.utexas.edu/~lorenzo/corsi/cs395t/04S/notes/p32-herlihy.pdf)
+I recommend reading the paper [A Quorum-Consensus Replication Method for Abstract Data Types, by Maurice Herlihy](https://www.cs.utexas.edu/~lorenzo/corsi/cs395t/04S/notes/p32-herlihy.pdf)
 
 - **timestamps** instead of version numbers
   - clients are able to generate timestamps that can be totally ordered, which will be consistent to that seen by an omniscient observer, hence guaranteeing linearizability
@@ -233,7 +233,7 @@ Considering the same example as above:
 
 ## Byzantine Quorums
 
-I highly recommend reading the paper [A Quorum-Consensus Replication Method for Abstract Data Types, by Maurice Herlihy](https://www.cs.utexas.edu/~lorenzo/corsi/cs395t/04S/notes/p32-herlihy.pdf)
+I recommend reading the paper [A Quorum-Consensus Replication Method for Abstract Data Types, by Maurice Herlihy](https://www.cs.utexas.edu/~lorenzo/corsi/cs395t/04S/notes/p32-herlihy.pdf) and the blog entry [Quorum Systems by Anh Dinh](https://dinhtta.github.io/quorum/)
 
 ### Byzantine Failures
 
@@ -379,7 +379,7 @@ The intuition behind the theorem is that, in asynchronous distributed systems, o
 
 ## System Model
 
-I highly recommend reading the paper [Byzantine quorum systems, by Dahlia Malkhi and Michael Reiter](https://dahliamalkhi.files.wordpress.com/2015/12/byzquorums-distcomputing1998.pdf) and the section 8.2.5 of van Steen and Tanenbaum, Distributed Systems, 3rd Ed., which can be found [here](https://www.pdfdrive.com/distributed-systems-3rd-edition-d189433770.html)
+I recommend reading the paper [Byzantine quorum systems, by Dahlia Malkhi and Michael Reiter](https://dahliamalkhi.files.wordpress.com/2015/12/byzquorums-distcomputing1998.pdf) and the section 8.2.5 of van Steen and Tanenbaum, Distributed Systems, 3rd Ed., which can be found [here](https://www.pdfdrive.com/distributed-systems-3rd-edition-d189433770.html)
 
 **Notation**
 
@@ -533,6 +533,7 @@ Read more on AsyncSpanningTree algorithm
 - nodes and keys are assigned unique IDs in an ID space from 0 to 2<sup>m</sup>-1 based on SHA-1 hash function
 - nodes and keys are arranged in a logical ring module 2<sup>m</sup>
 - each node maintains a finger table, which is a list of other nodes in the network that it is directly connected to
+- the distance function used in Chord can be expressed as d(x,y) = (y−x) mod 2<sup>m</sup>
 - when a new node joins the network, it uses the finger table of other nodes to find its place in the ring and update its finger table accordingly
 - each node is responsible for a range of keys, known as its "successor space", and it stores the keys that fall w/in that range
 - for a given key, its successor node is the node w/ the smallest ID that is larger than the key's ID
@@ -543,6 +544,7 @@ Read more on AsyncSpanningTree algorithm
 - nodes and keys share a 160 bits ID space
 - ID distance is computed using the XOR metric, which satisfies the triangle inequality
 - each node maintains a (bucket-based) routing table, which is a list of other nodes in the network that it is directly connected to
+- the distance function used in Kademlia is d(x,y) = x XOR y
 - when a new node joins the network, it uses the routing table of other nodes to find its place in the network and update its routing table accordingly
 - the key-value pairs are stored on the nodes according to the key's distance to the node's ID - the nodes closer to the key will store the key-value pair
 - has a more efficient way to find the closest nodes to a key, called "parallel lookups" which improves the performance and reduces the network load
@@ -551,7 +553,7 @@ Read more on AsyncSpanningTree algorithm
 
 # Physical and Logical Time
 
-I highly recommend watching the following videos (especially the two last ones, for a much clear understanding of vector clocks):
+I recommend watching the following videos (especially the two last ones, for a much clear understanding of vector clocks):
 
 1. [Distributed Systems 3.1: Physical time](https://www.youtube.com/watch?v=FQ_2N3AQu0M&list=PLeKd45zvjcDFUEv_ohr_HdUFe97RItdiB&index=9&ab_channel=MartinKleppmann)
 2. [Distributed Systems 3.2: Clock synchronisation](https://www.youtube.com/watch?v=mAyW-4LeXZo&list=PLeKd45zvjcDFUEv_ohr_HdUFe97RItdiB&index=10&ab_channel=MartinKleppmann)
@@ -593,3 +595,59 @@ Unlike Cristian's algorithm, the server process in the **Berkeley algorithm**, c
 - L then averages the clock times, ignoring any values it receives far outside the values of the others
 - instead of sending the updated current time back to the other process, L then sends out the amount (positive or negative) that each F<sub>i</sub> must adjust its clock
 - this avoids further uncertainty due to RTT at F
+
+# High Availability under Eventual Consistency
+
+I recommend watching the video [Distributed Systems 7.3: Eventual consistency](https://www.youtube.com/watch?v=9uCP3qHNbWw&ab_channel=MartinKleppmann)
+
+# Blockchain
+
+I recommend watching the following videos:
+
+1. [But how does bitcoin actually work?](https://www.youtube.com/watch?v=bBC-nXj3Ng4&ab_channel=3Blue1Brown)
+2. [L12: What is a Blockchain?](https://www.youtube.com/watch?v=Jp7T9qtuRIE&ab_channel=DistributedSystemsCourse)
+3. [L13: Bitcoin Blockchain Consensus](https://www.youtube.com/watch?v=f1ZJPEKeTEY&ab_channel=DistributedSystemsCourse)
+
+## Tendermint
+
+Based on the papers [Tendermint: Consensus without Mining](https://tendermint.com/static/docs/tendermint.pdf) and [The latest gossip on BFT consensus](https://arxiv.org/pdf/1807.04938.pdf) explanation.
+
+- 3 steps: **propose**, **prevote**, **precommit (which includes a special step - commit)**, each of which has a timeout
+- each round is longer than the previous round by a small fixed increment of time - this allows the network to eventually achieve consensus in a partially synchronous network
+- each round has a designated proposer chosen in round-robin fashion such that validators are chosen with frequency in proportion to their voting power
+- the protocol assumes n > 3f, so more than 2/3 of the nodes correspond to, at least, 2f+1 nodes
+- at any time during the process if a node
+  - receives more than 2/3 of commits for a particular block, it immediately enters the commit step (a commit-vote for a block at round R counts as prevotes and precommits for all rounds R' where R < R')
+  - is locked on a block from round R but receives a proof-of-lock for a round R' where R < R', the node unlocks
+
+### Propose
+
+- the proposer broadcasts a proposal to its peers via gossip
+  - if the proposer is locked on a block from some prior round it proposes the locked block and includes a proof-of-lock in the proposal
+- all nodes gossip the proposal to their neighboring peers
+
+### Prevote
+
+- in the beginning of this step each validator makes a decision
+  - if the validator is locked on a proposed block from some prior round, it signs and broadcasts a prevote for the locked block, otherwise
+  - if the validator had received an acceptable proposal for the current round, then it signs and broadcasts a prevote for the proposed block
+  - if the validator had received no proposal or an invalid one, it signs a special nil prevote
+- no locking happens during this step
+- all nodes gossip all prevotes for the round to their neighboring peers
+
+### Precommit
+
+- in the beginning of this step each validator makes a decision
+  - if the validator had received more than 2/3 of prevotes for a particular acceptable block then the validator signs and broadcasts a precommit for that block, locks onto that block and releases any prior locks
+  - if the node had received more than 2/3 of nil prevotes then it simply unlocks
+- when locking (or unlocking), the node gathers the prevotes for the locked block (or the prevotes for nil) and packages them into a proof-of-lock for later when it is its turn to propose
+- all nodes gossip all precommits for the round to all neighboring peers
+- at the end of this step each node makes a decision
+  - if the node had received more than 2/3 of precommits for a particular block, then the node enters the commit step (even if a node hadn’t yet received the block precommitted by the network, it enters the commit step)
+  - otherwise it continues onto the propose step of the next round
+
+#### Commit
+
+- there are two parallel conditions that must both be satisfied before finalizing the round
+  1. the node must receive the block committed by the network if it hadn’t already (once the block is received by a validator it signs and broadcasts a commit for that block)
+  2. the node must wait until it receive at least 2/3 of commits for the block precommitted by the network
