@@ -250,6 +250,7 @@ Faulty processes must be fewer than a third of all processes
 - b ∈ B is a set that contains all actually faulty servers (distinction: B - fail-prone, b - actually faulty)
 - f is the upperbound on byzantine servers (f = max |b|)
 - clients perform **read** and **write** operations on x
+- x is written w/ quorum q<sub>w</sub> and read w/ quorum q<sub>r</sub>
 - a copy of x is stored on each server, along w/ a timestamp
 - different clients must choose different timestamps and thus, each client chooses t ∈ T<sub>c</sub>, s.t. T<sub>c</sub> does not intersect T<sub>c'</sub> for any other client c'
 
@@ -281,19 +282,15 @@ Faulty processes must be fewer than a third of all processes
 
 #### Masking Quorums
 
-- x is written w/ quorum q<sub>1</sub>
-- subsequently, x is read w/ quorum q<sub>2</sub>
-- b are the faulty servers
-- then,
-  - up-to-date value of x is obtained from (q<sub>1</sub> ∩ q<sub>2</sub>) \ b
-  - out-of-date values of x are obtained from q<sub>2</sub> \ (q<sub>1</sub> ∪ b)
-  - arbitrary values of x are obtained from q<sub>2</sub> ∩ b
+- up-to-date value of x is obtained from (q<sub>w</sub> ∩ q<sub>r</sub>) \ b
+- out-of-date values of x are obtained from q<sub>w</sub> \ (q<sub>r</sub> ∪ b)
+- arbitrary values of x are obtained from q<sub>r</sub> ∩ b
 
 **M-consistency**
 
-- ∀q<sub>1</sub>,q<sub>2</sub> ∈ Q
+- ∀q<sub>w</sub>,q<sub>r</sub> ∈ Q
 - ∀b<sub>1</sub>,b<sub>2</sub> ∈ B
-- (q<sub>1</sub> ∩ q<sub>2</sub>) \ b<sub>1</sub> ⊄ b<sub>2</sub>
+- (q<sub>w</sub> ∩ q<sub>r</sub>) \ b<sub>1</sub> ⊄ b<sub>2</sub>
 
 **M-availability**
 
@@ -301,9 +298,7 @@ Faulty processes must be fewer than a third of all processes
 - ∃q ∈ Q
 - q ∩ b = ∅ (this is required for liveness)
 
-If f is the upperbound on faulty servers, then we need at least f+1 up-to-date non-faulty servers, thus **every pair of quorums must intersect in at least 2f+1 servers**
-
-Saying that we need at least f+1 non-faulty is equivalent to saying that **n-f >= |q| -> M-availability**
+f is the upperbound on faulty servers -> we need at least f+1 up-to-date non-faulty servers (M-availability: n-f >= |q|) -> **every pair of quorums must intersect in at least 2f+1 (f + f+1) servers** -> |q<sub>w</sub> ∩ q<sub>r</sub>) \ b| > |b| <=> |q<sub>w</sub> ∩ q<sub>r</sub>| > 2f
 
 ![image](https://user-images.githubusercontent.com/55671968/212310731-533f8616-2776-4648-8e7c-b4d8d70fbe7d.png)
 
@@ -323,6 +318,9 @@ Let n = 4f+1, then |q| = 3f+1
 
 #### Dissemination Quorums
 
+- up-to-date value of x is obtained from (q<sub>w</sub> ∩ q<sub>r</sub>) \ b
+- out-of-date values of x are obtained from q<sub>w</sub> \ up-to-date
+
 **Read**
 
 Very similar to the read operation in masking quorums but, instead of discarding the pairs (v,t) returned from any b, **the system discards all non-verifiable pairs**, i.e. pairs that fail the verification algorithm (not that the timestamps must also be part of the verified information)
@@ -339,9 +337,7 @@ Very similar to the read operation in masking quorums but, instead of discarding
 - ∃q ∈ Q
 - q ∩ b = ∅ (there should always be at least one quorum that a faulty set cannot disable)
 
-If f is the upperbound on faulty servers, then we need at least f+1 up-to-date non-faulty servers, thus **every pair of quorums must intersect in at least f+1 servers**
-
-Saying that we need at least f+1 non-faulty is equivalent to saying that **n-f >= |q| -> D-availability**
+f is the upperbound on faulty servers -> we need at least f+1 up-to-date non-faulty servers (D-availability: n-f >= |q|) -> **every pair of quorums must intersect in at least f+1 servers**
 
 ![image](https://user-images.githubusercontent.com/55671968/212310750-98dd8413-33d1-41da-b432-c11a39625747.png)
 
@@ -372,10 +368,8 @@ Let n = 3f+1, then |q| = 2f+1
 
 The intuition behind the theorem is that, in asynchronous distributed systems, one cannot distinguish a slow process from a crashed process and so, there will always be the possibility of certain executions reaching a state where:
 
-- if a process takes no decision, it may remain forever undecided,
-  thus violating liveness
-- if a process makes a decision, independently of the decision rule,
-  it may violate one of the safety properties
+- if a process takes no decision, it may remain forever undecided, thus violating liveness
+- if a process makes a decision, independently of the decision rule, it may violate one of the safety properties
 
 ## System Model
 
@@ -445,10 +439,12 @@ There is the possibility of all nodes that responded being also faulty and so on
 
 ### View Change Protocol
 
+I recommend reading the blog entry [Subtle Details in PBFT by Anh Dinh](https://dinhtta.github.io/pbft/)
+
 - to ensure liveness upon failure of the leader, while ensuring safety
 - leader failure is suspected on timeout or on evidence of faulty behaviour
 - what we wish to establish is that a request that was still being processed at the time the leader failed, will eventually get executed once and only once by all non-faulty servers
-- to this end, we first need to ensure that, regardless v, there are no two CCs w/ the same n but different requests
+- to this end, we first need to ensure that, regardless v, there are no two CCs w/ the same n but different requests or, in other words, we need to make sure that the new leader does not use old sequence numbers for new requests
 - this situation can be prevented by having 2f+1 CCs just as before, but this time based on PCs - in other words, we want to regenerate CCs, but now for v+1, and only to make sure that a non-faulty server is not missing any operation
 - note that we may be generating a CC for an operation that a server had already executed (which can be observed by looking at the sequence numbers), but that CC will be ignored by the server as long as it keeps an account of its own execution history
 
